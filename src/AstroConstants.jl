@@ -1,5 +1,7 @@
 module AstroConstants
 
-# Write your package code here.
+using Logging
+
+include("tpc.jl")
 
 end
