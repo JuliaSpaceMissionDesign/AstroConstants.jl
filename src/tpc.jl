@@ -1,23 +1,29 @@
 export load_tpc, load_tpc!
 
+# TPC associated regular expressions (precompiled)
 const _FIND_BODY_REGEX = Regex("(BODY\\w{1,}\\D{1,}=)")
 const _FIND_DATA_REGEX = Regex("=\\D{1,}\\(([^()]*)\\)|(=\\D{1,}([0-9]*\\.?[0-9]*))")
 const _FIND_BODY_INDEX = Regex("(?<=BODY)(.*?)(?=_)")
 const _FIND_PROP_NAME_REGEX = Regex("(?<=\\d_)(.*?)(?==)")
 
-struct ConstantsDict{T}
+"""
+    PlanetaryConstantsDict{T}
+
+Store TPC associated constants by NAIF ID.
+"""
+struct PlanetaryConstantsDict{T}
     data::Dict{Int, Dict{Symbol, Vector{T}}}
 end
 
-ConstantsDict{T}() where T = ConstantsDict{T}(Dict{Int, Dict{Symbol, Vector{T}}}())
+PlanetaryConstantsDict{T}() where T = PlanetaryConstantsDict{T}(Dict{Int, Dict{Symbol, Vector{T}}}())
 
-Base.length(c::ConstantsDict{T}) where T = length(c.data)
-Base.keys(c::ConstantsDict{T}) where T = keys(c.data)
-Base.values(c::ConstantsDict{T}) where T = values(c.data)
-Base.eltype(::ConstantsDict{T}) where T = T
-Base.getindex(c::ConstantsDict{T}, key) where T = getindex(c.data, key)
+Base.length(c::PlanetaryConstantsDict{T}) where T = length(c.data)
+Base.keys(c::PlanetaryConstantsDict{T}) where T = keys(c.data)
+Base.values(c::PlanetaryConstantsDict{T}) where T = values(c.data)
+Base.eltype(::PlanetaryConstantsDict{T}) where T = T
+Base.getindex(c::PlanetaryConstantsDict{T}, key) where T = getindex(c.data, key)
 
-function Base.show(io::IO, cache::ConstantsDict{T}) where T
+function Base.show(io::IO, cache::PlanetaryConstantsDict{T}) where T
     println(io, "ConstantsDict{$T} with $(length(cache.data)) entries:")
     for (idx, props) in cache.data 
         propstr = join([String(p) for p in keys(props)], ", ")
@@ -26,11 +32,11 @@ function Base.show(io::IO, cache::ConstantsDict{T}) where T
 end
 
 """
-    load_tpc!(cache::Dict{Int, Dict{Symbol, Vector{T}}}, file::String) where T
+    load_tpc!(cache::ConstantsDict{T}, file::String) where T
 
-Load TPC file in a dictionary. 
+Load TPC file in the `cache` dictionary. 
 """
-function load_tpc!(cache::ConstantsDict{T}, file::String) where T
+function load_tpc!(cache::PlanetaryConstantsDict{T}, file::String) where T
 
     @info "Loading constants from $file"
     # read document
@@ -110,25 +116,20 @@ function load_tpc!(cache::ConstantsDict{T}, file::String) where T
     return cache
 end
 
+"""
+    load_tpc(::Type{T}, file::String) where T 
+
+Load TPC file in a [`PlanetaryConstantsDict`](@ref) object.
+"""
 function load_tpc(::Type{T}, file::String) where T 
-    cache = ConstantsDict{T}()
+    cache = PlanetaryConstantsDict{T}()
     return load_tpc!(cache, file)
 end
 
 function load_tpc(::Type{T}, files::AbstractVector{String}) where T 
-    cache = ConstantsDict{T}()
+    cache = PlanetaryConstantsDict{T}()
     for file in files
         load_tpc!(cache, file)
     end 
     return cache
 end
-
-data = load_tpc(Float64, "/home/andrew/Documents/Codes/JSMD/AstroConstants.jl/pck00011.tpc");
-
-data = load_tpc(
-    Float64,
-    [
-        "/home/andrew/Documents/Codes/JSMD/AstroConstants.jl/pck00011.tpc",
-        "/home/andrew/Documents/Codes/JSMD/AstroConstants.jl/gm_de440.tpc"
-    ]
-)

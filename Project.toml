@@ -3,6 +3,9 @@ uuid = "59872b50-2c0f-4331-84f7-44577a892ba3"
 authors = ["Andrea Pasquale <andrea.pasquale@polimi.it>"]
 version = "0.1.0"
 
+[deps]
+Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
+
 [compat]
 julia = "1"
 
